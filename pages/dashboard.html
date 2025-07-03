@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Meta Settings -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | CodeGap</title>
+
+  <!-- Tailwind CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Custom Font -->
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-[#0e0e0e] text-white min-h-screen">
+
+  <!-- Mobile Warning -->
+  <div class="sm:hidden fixed inset-0 z-50 bg-[#0e0e0e] flex flex-col items-center justify-center text-center px-6">
+    <h1 class="text-xl text-white mb-2">Mobile Not Supported.</h1>
+    <p class="text-gray-400 leading-relaxed max-w-xs">
+      Sorry! This dashboard works best on a desktop or large screen.<br>
+      Please open it on your <span class="text-white">laptop or PC</span>.
+    </p>
+    <br>
+    <img src="image/logo.png" style="width: 30px; height: 40px;">
+    <p class="mt-6 text-sm text-gray-600">&copy; 2025 CodeGap</p>
+  </div>
+
+  <!-- Desktop Layout -->
+  <div class="hidden sm:block p-6">
+
+    <!-- Header -->
+    <header class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-3">
+        <img src="image/logo.png" class="w-8 h-10" />
+        <span class="text-lg text-[#18cb96] font-semibold">CodeGap Dashboard</span>
+      </div>
+      <div class="flex items-center gap-4 text-sm text-gray-400">
+        <a href="https://computerboy-dev.github.io/portfolio/" class="hover:text-white">About Developer</a>
+        <a href="#" class="hover:text-white" id="logoutBtn">Log Out</a>
+        <img src="image/avatars/avatar 1.png" class="w-8 h-8 rounded-full border border-[#444]" />
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-[#111] rounded-xl p-6 flex justify-between items-center flex-wrap gap-10">
+      <!-- Welcome Text -->
+      <div class="max-w-xl">
+        <h1 class="text-3xl font-bold text-white mb-2">
+          Hello, <span id="userGreeting" class="text-[#f97316]"></span>
+        </h1>
+        <h2 class="text-2xl font-semibold text-gray-100 mb-4">Welcome to CodeGap!</h2>
+        <p class="text-gray-400 text-sm mb-4">
+          Tools for building and managing your coding projects. Everything is synced with Firebase for real-time updates.
+        </p>
+        <a href="#" class="text-sm text-[#18cb96] hover:underline">View Docs</a>
+      </div>
+
+      <!-- Dashboard Illustration -->
+      <div>
+        <img src="image/avatars/avatar 2.png" alt="dashboard illustration" class="w-[260px]">
+      </div>
+    </section>
+
+    <!-- Stack Options -->
+    <section class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- Web Editor Card -->
+      <div onclick="startStackProject('html')" class="bg-[#1a1a1a] border border-[#333] rounded-xl p-6 hover:border-[#18cb96] cursor-pointer transition duration-300">
+        <img src="https://img.icons8.com/fluency/48/code-file.png" class="mb-4 w-10 h-10" />
+        <h3 class="text-lg font-semibold text-white mb-1">Web Project (HTML/CSS/JS)</h3>
+        <p class="text-sm text-gray-400 mb-4">
+          Build modern, responsive UIs using web technologies. Great for web starters and frontend devs.
+        </p>
+        <div class="text-xs text-gray-500">Stack: <span class="text-white font-semibold">HTML + CSS + JS</span></div>
+      </div>
+
+      <!-- Python Editor (Disabled) -->
+      <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-6 opacity-50 cursor-not-allowed">
+        <img src="https://img.icons8.com/color/48/python.png" class="mb-4 w-10 h-10" />
+        <h3 class="text-lg font-semibold text-gray-400 mb-1">Prototype with Python</h3>
+        <p class="text-sm text-gray-500 mb-4">
+          Coming soon: Script, automate, or build backend logic with live Python editor support.
+        </p>
+        <div class="text-xs text-gray-600">Stack: <span class="text-gray-400 font-medium">Python 3.x</span></div>
+      </div>
+
+      <!-- C/C++ Editor (Disabled) -->
+      <div class="bg-[#1a1a1a] border border-[#222] rounded-xl p-6 opacity-50 cursor-not-allowed">
+        <img src="https://img.icons8.com/color/48/c-plus-plus-logo.png" class="mb-4 w-10 h-10" />
+        <h3 class="text-lg font-semibold text-gray-400 mb-1">C/C++ Programming</h3>
+        <p class="text-sm text-gray-500 mb-4">
+          Coming soon: Write low-level or performance-focused code with instant preview and compiler support.
+        </p>
+        <div class="text-xs text-gray-600">Stack: <span class="text-gray-400 font-medium">C / C++</span></div>
+      </div>
+    </section>
+
+    <!-- Project History Table -->
+    <section class="mt-12">
+      <h2 class="text-sm text-gray-400 uppercase font-semibold mb-4">Project History</h2>
+      <div class="overflow-x-auto border border-[#222] rounded">
+        <table class="w-full text-sm">
+          <thead class="bg-[#1a1a1a] text-left text-gray-400">
+            <tr>
+              <th class="px-4 py-3">Name</th>
+              <th class="px-4 py-3">Language</th>
+              <th class="px-4 py-3">Updated</th>
+              <th class="px-4 py-3">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#222]">
+            <tr class="hover:bg-[#181818]">
+              <td class="px-4 py-3 text-[#18cb96] font-medium"></td>
+              <td class="px-4 py-3 text-gray-300"></td>
+              <td class="px-4 py-3"></td>
+              <td class="px-4 py-3 text-gray-400"></td>
+            </tr>
+            <!-- Add more rows dynamically here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center">
+    <div class="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] w-full max-w-xs text-center">
+      <h2 class="text-white text-lg font-semibold mb-3">Delete Project</h2>
+      <p class="text-gray-300 mb-4" id="deleteModalMessage">Are you sure you want to delete this project?</p>
+      <div class="mt-4 flex justify-center gap-3">
+        <button onclick="closeDeleteModal()" class="px-4 py-1 bg-[#333] text-white rounded hover:bg-[#444]">Cancel</button>
+        <button id="confirmDeleteBtn" class="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase + Dashboard Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase Setup
+    const config = await fetch('../sdk/firebase-config.json').then(res => res.json());
+    const app = initializeApp(config);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let projectToDelete = null;
+
+    // Handle Authentication State
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "../index.html";
+      } else {
+        const span = document.getElementById("userGreeting");
+        span.textContent = user.displayName || (user.email?.split("@")[0].slice(0, 8) + "...");
+        loadProjectHistory(user.uid);
+      }
+    });
+
+    // Load Projects from Firestore
+    async function loadProjectHistory(uid) {
+      const tbody = document.querySelector("tbody");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+      const querySnap = await getDocs(collection(db, "users", uid, "projects"));
+
+      querySnap.forEach((docSnap) => {
+        const data = docSnap.data();
+        const projectId = docSnap.id;
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-[#181818]";
+
+        // Name Cell
+        const nameCell = document.createElement("td");
+        nameCell.className = "px-4 py-3 text-[#18cb96] font-medium cursor-pointer hover:underline";
+        nameCell.textContent = data.name || projectId;
+        nameCell.onclick = () => {
+          window.location.href = `./HTMLeditor.html?uid=${uid}&project=${projectId}`;
+        };
+
+        // Language Cell
+        const langCell = document.createElement("td");
+        langCell.className = "px-4 py-3";
+        langCell.textContent = data.language || "HTML";
+
+        // Updated Time Cell
+        const updatedCell = document.createElement("td");
+        updatedCell.className = "px-4 py-3 text-gray-400";
+        let updatedAt = new Date();
+        try {
+          if (data.updated?.toDate) updatedAt = data.updated.toDate();
+        } catch (e) {
+          console.warn("Invalid timestamp", e);
+        }
+        updatedCell.textContent = timeAgo(updatedAt);
+
+        // Delete Cell
+        const deleteCell = document.createElement("td");
+        deleteCell.className = "px-4 py-3";
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete Project";
+        deleteBtn.className = "text-red-400 hover:text-red-600 text-sm";
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          showDeleteModal(uid, projectId, data.name || projectId);
+        };
+        deleteCell.appendChild(deleteBtn);
+
+        tr.append(nameCell, langCell, updatedCell, deleteCell);
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Time Ago Formatter
+    function timeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      const intervals = {
+        year: 31536000,
+        month: 2592000,
+        day: 86400,
+        hour: 3600,
+        minute: 60,
+      };
+      for (const [unit, value] of Object.entries(intervals)) {
+        const count = Math.floor(seconds / value);
+        if (count === 1) return `1 ${unit} ago`;
+        if (count > 1) return `${count} ${unit}s ago`;
+      }
+      return "Just now";
+    }
+
+    // Logout
+    document.getElementById("logoutBtn")?.addEventListener("click", () => {
+      signOut(auth).then(() => window.location.href = "/index.html");
+    });
+
+    // Start Project for HTML Stack
+    window.startStackProject = function (stack) {
+      const user = auth.currentUser;
+      if (!user) return;
+      const uid = user.uid;
+      const projectId = `proj-${Date.now()}`;
+      localStorage.setItem("currentProjectId", projectId);
+      if (stack === "html") {
+        window.location.href = `./HTMLeditor.html?uid=${uid}&project=${projectId}`;
+      }
+    };
+
+    // Show Delete Confirmation
+    function showDeleteModal(uid, projectId, name) {
+      projectToDelete = { uid, projectId };
+      document.getElementById("deleteModalMessage").textContent =
+        `Are you sure you want to delete "${name}"?`;
+      document.getElementById("deleteModal").classList.remove("hidden");
+    }
+
+    function closeDeleteModal() {
+      document.getElementById("deleteModal").classList.add("hidden");
+      projectToDelete = null;
+    }
+
+    // Confirm Delete
+    document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+      if (!projectToDelete) return;
+      const { uid, projectId } = projectToDelete;
+      await deleteDoc(doc(db, "users", uid, "projects", projectId));
+      closeDeleteModal();
+      loadProjectHistory(uid);
+    });
+  </script>
+</body>
+</html>

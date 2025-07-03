@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeGap Editor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet" />
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <style>
+    body { font-family: 'Space Grotesk', sans-serif; }
+    #editor { width: 100%; height: 100%; }
+    .file-item { cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .file-item:hover { background-color: #222; }
+    .dragging * { user-select: none !important; pointer-events: none !important; }
+  </style>
+</head>
+<body class="bg-[#0e0e0e] text-white min-h-screen">
+
+  <!-- Mobile Warning -->
+  <div id="mobileWarning" class="hidden fixed inset-0 z-50 bg-[#0e0e0e] flex flex-col items-center justify-center text-center px-6">
+    <h1 class="text-xl text-white mb-2">Mobile Not Supported.</h1>
+    <p class="text-gray-400 leading-relaxed max-w-xs">
+      Sorry! This dashboard works best on a desktop or large screen.<br>Please open it on your <span class="text-white">laptop or PC</span>.
+    </p>
+    <br>
+    <img src="image/logo.png" style="width: 30px; height: 40px;">
+    <p class="mt-6 text-sm text-gray-600">&copy; 2025 CodeGap</p>
+  </div>
+
+  <div class="flex flex-col h-screen">
+    <!-- Navbar -->
+    <header class="bg-[#111] px-4 py-3 flex justify-between items-center border-b border-[#222]">
+      <div class="flex items-center gap-3">
+        <img src="image/logo.png" class="w-7 h-9" />
+        <span class="text-lg font-semibold">CodeGap Editor</span>
+      </div>
+      <nav class="hidden md:flex gap-6 text-sm text-gray-400">
+        <a href="#" id="runBtn" class="hover:text-white">Run &nbsp;▶</a>
+        <span id="saveStatus" class="ml-4"></span>
+      </nav>
+      <button id="downloadProjectBtn" class="bg-[#18cb96] text-sm text-black px-4 py-1.5 rounded hover:bg-[#15b184] transition">
+        <i class='bx bx-arrow-down-circle'></i>  Download Project
+      </button>
+    </header>
+
+    <!-- Layout -->
+    <div class="flex flex-1 overflow-hidden relative">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="hidden md:block w-64 bg-[#121212] border-r border-[#222] px-5 py-4 overflow-y-auto flex-shrink-0 z-40">
+        <h2 class="text-sm text-gray-400 mb-4 uppercase tracking-wide">Project Files</h2>
+        <ul id="fileList" class="text-sm space-y-1 mb-4"></ul>
+        <div class="flex gap-2">
+          <button onclick="createFile()" class="text-xs px-2 py-1 bg-[#1a1a1a] rounded border border-[#333] hover:bg-[#222]">+ File</button>
+          <button onclick="createFolder()" class="text-xs px-2 py-1 bg-[#1a1a1a] rounded border border-[#333] hover:bg-[#222]">+ Folder</button>
+        </div>
+      </aside>
+
+      <!-- Toggle Button -->
+      <button id="sidebarToggle" class="fixed top-16 left-2 z-50 bg-[#18cb96] text-black px-3 py-1 rounded-md md:hidden shadow">
+        ☰
+      </button>
+
+      <!-- Main Panel -->
+      <main id="editorContainer" class="flex-1 flex flex-col bg-[#0e0e0e] min-w-0 relative">
+        <div class="flex text-sm bg-[#111] border-b border-[#222] px-4 py-2" id="tabs"></div>
+        <div id="editor" class="flex-1 min-w-0"></div>
+
+        <!-- Terminal -->
+        <div id="terminalResizeHandle" class="h-2 cursor-row-resize bg-[#222]"></div>
+        <div id="terminalWrapper" class="bg-black text-green-500 text-sm font-mono px-4 py-3 border-t border-[#222] overflow-y-auto" style="height: 180px;">
+          <div id="terminalOutput" class="whitespace-pre-wrap"></div>
+          <div class="flex items-center mt-2">
+            <span class="text-green-400 mr-2">$</span>
+            <input id="terminalInput" type="text" class="flex-1 bg-transparent text-green-200 outline-none" autocomplete="off" />
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center">
+    <div class="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] w-full max-w-xs text-center">
+      <h2 id="modalTitle" class="text-white text-lg font-semibold mb-3">Create</h2>
+      <input id="modalInput" type="text" class="w-full px-3 py-2 bg-[#0e0e0e] text-white border border-[#333] rounded outline-none" placeholder="Enter name..." autocomplete="off"/>
+      <div class="mt-4 flex justify-center gap-3">
+        <button onclick="closeModal()" class="px-4 py-1 bg-[#333] text-white rounded hover:bg-[#444]">Cancel</button>
+        <button onclick="confirmModal()" class="px-4 py-1 bg-[#18cb96] text-black rounded hover:bg-[#15b184]">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div id="contextMenu" class="hidden fixed z-50 bg-[#1a1a1a] text-sm text-white rounded shadow-lg border border-[#333]">
+    <div onclick="contextAction('file')" class="px-4 py-2 hover:bg-[#222] cursor-pointer">📄 New File</div>
+    <div onclick="contextAction('folder')" class="px-4 py-2 hover:bg-[#222] cursor-pointer">📁 New Folder</div>
+  </div>
+
+  <!-- Editor Logic -->
+  <script type="module" src="editor.js"></script>
+
+  <!-- Terminal Resize & Sidebar Toggle -->
+  <script>
+    // Terminal Resize
+    (() => {
+      const handle = document.getElementById("terminalResizeHandle");
+      const terminal = document.getElementById("terminalWrapper");
+      let isResizing = false;
+
+      handle.addEventListener("mousedown", () => {
+        isResizing = true;
+        document.body.style.cursor = "row-resize";
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isResizing) return;
+        const windowHeight = window.innerHeight;
+        const max = windowHeight * 0.45;
+        const min = 100;
+        const newHeight = Math.min(Math.max(windowHeight - e.clientY, min), max);
+        terminal.style.height = `${newHeight}px`;
+      });
+
+      document.addEventListener("mouseup", () => {
+        isResizing = false;
+        document.body.style.cursor = "";
+      });
+    })();
+
+    // Sidebar Toggle
+    const sidebar = document.getElementById("sidebar");
+    const toggleBtn = document.getElementById("sidebarToggle");
+
+    toggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("hidden");
+      sidebar.classList.toggle("absolute");
+      sidebar.classList.toggle("top-0");
+      sidebar.classList.toggle("left-0");
+      sidebar.classList.toggle("h-full");
+      sidebar.classList.toggle("p-4");
+      sidebar.classList.toggle("bg-[#121212]");
+    });
+
+    // Reset sidebar state on resize
+    window.addEventListener("resize", () => {
+      if (window.innerWidth >= 768) {
+        sidebar.classList.remove("hidden", "absolute", "top-0", "left-0", "h-full", "p-4");
+        sidebar.classList.add("block");
+      }
+    });
+
+    // Mobile screen warning
+    if (window.innerWidth < 640) {
+      document.getElementById("mobileWarning").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>

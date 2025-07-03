@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeGap Editor</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script> <!-- For unique file/folder IDs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script> <!-- Monaco Editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script> <!-- For ZIP download -->
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet" />
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Custom Styling -->
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    #editor {
+      width: 100%;
+      height: 100%;
+    }
+
+    .file-item {
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .file-item:hover {
+      background-color: #222;
+    }
+
+    .dragging * {
+      user-select: none !important;
+      pointer-events: none !important;
+    }
+
+    /* Custom scrollbar styling for terminal */
+    #terminalWrapper::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #terminalWrapper::-webkit-scrollbar-track {
+      background: #0e0e0e;
+    }
+
+    #terminalWrapper::-webkit-scrollbar-thumb {
+      background: #8e8e8e;
+      border-radius: 4px;
+    }
+
+    #terminalWrapper::-webkit-scrollbar-thumb:hover {
+      background: #272727;
+    }
+
+    #terminalWrapper {
+      scrollbar-width: thin;
+      scrollbar-color: #8e8e8e #0e0e0e;
+    }
+  </style>
+</head>
+
+<body class="bg-[#0e0e0e] text-white min-h-screen">
+
+  <!-- Mobile Warning Message -->
+  <div id="mobileWarning" class="hidden fixed inset-0 z-50 bg-[#0e0e0e] flex flex-col items-center justify-center text-center px-6">
+    <h1 class="text-xl text-white mb-2">Mobile Not Supported</h1>
+    <p class="text-gray-400 leading-relaxed max-w-xs">
+      Please use a desktop or laptop to open the editor.
+    </p>
+    <img src="image/logo.png" class="w-8 h-10 mt-4" />
+    <p class="mt-6 text-sm text-gray-600">&copy; 2025 CodeGap</p>
+  </div>
+
+  <!-- Main App Wrapper -->
+  <div class="flex flex-col h-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-[#111] px-4 py-3 flex justify-between items-center border-b border-[#222]">
+      <div class="flex items-center gap-3">
+        <img src="image/logo.png" class="w-7 h-9" />
+        <span class="text-lg font-semibold">CodeGap Editor</span>
+      </div>
+
+      <nav class="hidden md:flex gap-6 text-sm text-gray-400">
+        <a href="#" id="runBtn" class="hover:text-white">Run ▶</a>
+        <span id="saveStatus" class="ml-4"></span>
+      </nav>
+
+      <button id="downloadProjectBtn" class="bg-[#18cb96] text-sm text-black px-4 py-1.5 rounded hover:bg-[#15b184] transition">
+        <i class='bx bx-arrow-down-circle'></i> Download Project
+      </button>
+    </header>
+
+    <!-- Editor Layout -->
+    <div class="flex flex-1 overflow-hidden relative">
+
+      <!-- Sidebar -->
+      <aside id="sidebar" class="hidden md:block w-64 bg-[#121212] border-r border-[#222] px-5 py-4 overflow-y-auto z-40">
+        <h2 class="text-sm text-gray-400 mb-4 uppercase tracking-wide">Project Files</h2>
+        <ul id="fileList" class="text-sm space-y-1 mb-4"></ul>
+        <div class="flex gap-2">
+          <button onclick="createFile()" class="text-xs px-2 py-1 bg-[#1a1a1a] border border-[#333] rounded hover:bg-[#222]">+ File</button>
+          <button onclick="createFolder()" class="text-xs px-2 py-1 bg-[#1a1a1a] border border-[#333] rounded hover:bg-[#222]">+ Folder</button>
+        </div>
+      </aside>
+
+      <!-- Sidebar Toggle (Mobile) -->
+      <button id="sidebarToggle" class="fixed top-16 left-2 z-50 bg-[#18cb96] text-black px-3 py-1 rounded-md md:hidden shadow">☰</button>
+
+      <!-- Editor and Terminal Section -->
+      <main id="editorContainer" class="flex-1 flex flex-col bg-[#0e0e0e] min-w-0 relative">
+
+        <!-- Tabs -->
+        <div id="tabs" class="flex text-sm bg-[#111] border-b border-[#222] px-4 py-2"></div>
+
+        <!-- Monaco Editor -->
+        <div id="editor" class="flex-1 min-w-0"></div>
+
+        <!-- Terminal Resize Bar -->
+        <div id="terminalResizeHandle" class="h-2 cursor-row-resize bg-[#0e0e0e]"></div>
+
+        <!-- Terminal Output -->
+        <div id="terminalWrapper" class="bg-[#0e0e0e] text-green-500 text-sm font-mono px-4 py-3 border-t border-[#222] overflow-y-auto" style="height: 180px;">
+          <div id="terminalOutput" class="whitespace-pre-wrap"></div>
+          <div class="flex items-center mt-2">
+            <span id="terminalPrompt" class="text-green-400 mr-2">[codegap@terminal] $</span>
+            <input id="terminalInput" type="text" class="flex-1 bg-transparent text-green-200 outline-none" autocomplete="off" />
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal for Creating File/Folder -->
+  <div id="modalBackdrop" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center">
+    <div class="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] w-full max-w-xs text-center">
+      <h2 id="modalTitle" class="text-white text-lg font-semibold mb-3">Create</h2>
+      <input id="modalInput" type="text" class="w-full px-3 py-2 bg-[#0e0e0e] text-white border border-[#333] rounded outline-none" placeholder="Enter name..." autocomplete="off" />
+      <div class="mt-4 flex justify-center gap-3">
+        <button onclick="closeModal()" class="px-4 py-1 bg-[#333] text-white rounded hover:bg-[#444]">Cancel</button>
+        <button onclick="confirmModal()" class="px-4 py-1 bg-[#18cb96] text-black rounded hover:bg-[#15b184]">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu (Right Click Options) -->
+  <ul id="contextMenu" class="absolute bg-[#111] border border-[#333] text-sm rounded hidden z-50 text-white w-36 shadow-md">
+    <li id="newFileOption" onclick="contextAction('file')" class="px-3 py-2 hover:bg-[#222] cursor-pointer">New File</li>
+    <li id="newFolderOption" onclick="contextAction('folder')" class="px-3 py-2 hover:bg-[#222] cursor-pointer">New Folder</li>
+    <li onclick="renameItem()" class="px-3 py-2 hover:bg-[#222] cursor-pointer">Rename</li>
+    <li onclick="deleteItem()" class="px-3 py-2 hover:bg-[#222] cursor-pointer">Delete</li>
+  </ul>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModalBackdrop" class="fixed inset-0 z-50 bg-black/60 hidden flex items-center justify-center">
+    <div class="bg-[#1a1a1a] p-6 rounded-lg border border-[#333] w-full max-w-xs text-center">
+      <h2 class="text-white text-lg font-semibold mb-3">Delete Confirmation</h2>
+      <p class="text-gray-300 mb-4">Are you sure you want to delete this item?</p>
+      <div class="mt-4 flex justify-center gap-3">
+        <button id="cancelDeleteBtn" class="px-4 py-1 bg-[#333] text-white rounded hover:bg-[#444]">Cancel</button>
+        <button id="confirmDeleteBtn" class="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Importing JS Logic -->
+  <script type="module" src="editor.js"></script>
+
+  <!-- Mobile Detection + Sidebar Toggle -->
+  <script>
+    // Show warning for mobile users
+    if (window.innerWidth < 640) {
+      document.getElementById("mobileWarning").classList.remove("hidden");
+    }
+
+    // Sidebar toggle for small screens
+    document.getElementById("sidebarToggle").onclick = () => {
+      const s = document.getElementById("sidebar");
+      s.classList.toggle('hidden');
+      s.classList.toggle('absolute');
+      s.classList.toggle('top-0');
+      s.classList.toggle('left-0');
+      s.classList.toggle('h-full');
+      s.classList.toggle('p-4');
+      s.classList.toggle('bg-[#121212]');
+    };
+
+    // Reset sidebar visibility on desktop resize
+    window.onresize = () => {
+      if (window.innerWidth >= 768) {
+        const s = document.getElementById("sidebar");
+        s.classList.remove('hidden', 'absolute', 'top-0', 'left-0', 'h-full', 'p-4');
+        s.classList.add('block');
+      }
+    };
+  </script>
+</body>
+</html>
