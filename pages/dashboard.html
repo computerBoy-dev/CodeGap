@@ -159,7 +159,7 @@
     // Handle Authentication State
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        window.location.href = "https://computerboy-dev.github.io/codeGap/";
+        window.location.href = "/codegap/index.html";
       } else {
         const span = document.getElementById("userGreeting");
         span.textContent = user.displayName || (user.email?.split("@")[0].slice(0, 8) + "...");
