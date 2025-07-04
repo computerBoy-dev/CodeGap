@@ -85,7 +85,7 @@ codeGap/
 
 ## 🛑 License & Permissions
 
-**© 2025 Santosh Sharma. All Rights Reserved.**
+**© 2025 Aaryan. All Rights Reserved.**
 
 - This is a private project.  
 - Do **not** copy, clone, modify, re-upload, or distribute without written permission.  
@@ -95,6 +95,6 @@ codeGap/
 
 ## 📬 Contact
 
-**Developer**: Santosh Sharma  
-📧 Email: your-email@example.com  
-🔗 LinkedIn: https://linkedin.com/in/yourprofile
+**Developer**: Aaryan 
+📧 Email: iaaryan37@gmail.com 
+🔗 LinkedIn: https://linkedin.com/in/computerboy/
