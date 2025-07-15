@@ -48,26 +48,6 @@ codeGap/
 
 ---
 
-## 🔧 How to Use Locally
-
-1. Clone this repository:
-   ```
-   git clone https://github.com/your-username/codeGap.git
-   ```
-
-2. Run with any local server (Live Server / VS Code / `npx serve`):
-   ```
-   npx serve .
-   ```
-
-3. Set up Firebase:
-   - Enable Firestore and Auth (Email + Google)
-   - Replace `firebase-config.json` with your config
-
-4. Open `index.html` in browser and start coding!
-
----
-
 ## 🔒 Auth & Sync
 
 - Firebase Authentication used (login required)
